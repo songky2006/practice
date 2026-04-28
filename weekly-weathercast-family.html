@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Weathercast Family Planner</title>
+  <style>
+    :root {
+      --bg-1: #eef5ea;
+      --bg-2: #fdf7e8;
+      --panel: rgba(255, 255, 255, 0.88);
+      --line: #d6dcc7;
+      --ink: #203130;
+      --muted: #66756f;
+      --green: #567b58;
+      --mint: #dbead9;
+      --blue: #d9ebf8;
+      --orange: #e08245;
+      --sand: #f6eddc;
+      --shadow: 0 18px 40px rgba(58, 70, 41, 0.12);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(86, 123, 88, 0.16), transparent 24%),
+        radial-gradient(circle at top right, rgba(224, 130, 69, 0.14), transparent 22%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1320px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(214, 220, 199, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 22px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--mint);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 0.95;
+    }
+
+    .lead {
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 16px;
+      max-width: 58ch;
+    }
+
+    .control-row {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .input-box,
+    .info-box {
+      background: #fffef9;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px 18px;
+    }
+
+    .input-box {
+      min-width: 220px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input[type="date"] {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .info-box {
+      flex: 1;
+      min-width: 260px;
+      display: grid;
+      gap: 6px;
+      align-content: center;
+    }
+
+    .info-box strong {
+      font-size: 19px;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .stat-card {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(132, 166, 132, 0.28);
+      background: linear-gradient(180deg, #f7fbf4, #edf5ea);
+    }
+
+    .stat-card.alt {
+      border-color: rgba(117, 166, 194, 0.3);
+      background: linear-gradient(180deg, #f8fcff, #edf5fb);
+    }
+
+    .stat-card small,
+    .stat-card p {
+      color: #5d7164;
+    }
+
+    .stat-card strong {
+      display: block;
+      margin: 8px 0 10px;
+      font-size: 30px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 22px;
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .panel + .panel {
+      margin-top: 22px;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    .panel-head p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .weather-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .weather-card {
+      border-radius: 18px;
+      border: 1px solid #d9e7d6;
+      background: linear-gradient(180deg, #ffffff, #f4faf3);
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .weather-card .day {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .weather-card .icon {
+      font-size: 28px;
+      margin: 10px 0 8px;
+    }
+
+    .weather-card .temp {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .weather-card .note {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #5f716a;
+      line-height: 1.45;
+    }
+
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .criteria-item {
+      padding: 14px;
+      border-radius: 18px;
+      background: #fcf8ee;
+      border: 1px solid #eadfc5;
+    }
+
+    .criteria-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .criteria-item p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .calendar-meta {
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .weekday {
+      padding: 12px 10px;
+      text-align: center;
+      border-radius: 14px;
+      background: #eef4e7;
+      color: #60725b;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .day-cell {
+      min-height: 158px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid #e3e6d7;
+      background: #fffefb;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .day-cell.week-focus {
+      background: linear-gradient(180deg, #fff6e8, #fffefb);
+      border-color: #efc38a;
+    }
+
+    .day-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    .day-top strong {
+      font-size: 15px;
+    }
+
+    .day-top span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .reco-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .reco-link {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: #f4f7ef;
+      border: 1px solid #dbe4d2;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .reco-link:hover {
+      transform: translateY(-1px);
+      border-color: #9abb94;
+    }
+
+    .reco-link strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .reco-link span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 22px;
+      align-content: start;
+    }
+
+    .map-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .province {
+      min-height: 112px;
+      padding: 14px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #fffefb, #f0f4e8);
+      border: 1px solid #dce5d0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .province[data-region="강원도"] { grid-column: 3 / span 2; }
+    .province[data-region="경기도"] { grid-column: 2 / span 1; }
+    .province[data-region="충청북도"] { grid-column: 2 / span 1; }
+    .province[data-region="충청남도"] { grid-column: 1 / span 1; }
+    .province[data-region="전라북도"] { grid-column: 1 / span 1; }
+    .province[data-region="전라남도"] { grid-column: 1 / span 1; }
+    .province[data-region="경상북도"] { grid-column: 3 / span 1; }
+    .province[data-region="경상남도"] { grid-column: 3 / span 1; }
+
+    .province strong {
+      font-size: 14px;
+    }
+
+    .province .num {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--green);
+    }
+
+    .province span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .water-rank {
+      display: grid;
+      gap: 10px;
+    }
+
+    .water-item {
+      padding: 14px;
+      border-radius: 18px;
+      background: #f6fbff;
+      border: 1px solid #d4e6f2;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .water-rank .rank {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: #dbeef9;
+      color: #36657f;
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .water-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .water-item p,
+    .water-item a {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .water-item a {
+      color: #2d6d93;
+      text-decoration: underline;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1100px) {
+      .hero,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .weather-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 780px) {
+      .page {
+        width: min(100% - 18px, 1320px);
+        padding-top: 18px;
+      }
+
+      .hero,
+      .panel {
+        padding: 18px;
+        border-radius: 20px;
+      }
+
+      .criteria-grid,
+      .weather-grid,
+      .map-board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .calendar {
+        gap: 8px;
+      }
+
+      .day-cell {
+        min-height: 140px;
+        padding: 10px;
+      }
+
+      .province[data-region] {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .weather-grid,
+      .criteria-grid,
+      .map-board {
+        grid-template-columns: 1fr;
+      }
+
+      .calendar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .weekday {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Weekly Weathercast</div>
+        <h1>4인 가족 주간 날씨 기반<br />한 달 방문 추천 플래너</h1>
+        <p class="lead">
+          방문 날짜가 속한 주를 시작으로 4주 동안, 초등학생 남자아이들이 좋아할 만한
+          계절 체험, 교육, 활동형 장소와 물놀이 장소를 달력으로 정리했습니다.
+          달력의 각 추천 카드를 누르면 공식 웹사이트로 바로 이동할 수 있습니다.
+        </p>
+        <div class="control-row">
+          <div class="input-box">
+            <label for="visitDate">방문 날짜</label>
+            <input id="visitDate" type="date" />
+          </div>
+          <div class="info-box">
+            <span id="rangeLabel">4주 추천 범위</span>
+            <strong id="summaryTitle">가족형 추천을 계산하는 중</strong>
+            <span id="summaryText">날씨, 계절, 가족 성향, 물놀이 우선순위를 함께 반영합니다.</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="stat-card">
+          <small>가족 적합도 점수</small>
+          <strong id="familyScore">84</strong>
+          <p id="familyComment">체험, 교육, 활동성 비중이 균형 잡힌 시기입니다.</p>
+        </div>
+        <div class="stat-card alt">
+          <small>물놀이 우선순위 기준</small>
+          <strong id="waterHeadline">광명시 기준 적용</strong>
+          <p id="waterComment">거리와 공식 요금을 함께 반영해 여름철 물놀이 추천 순서를 조정합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <div>
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>주간 날씨 예보</h2>
+              <p>선택한 날짜가 속한 주의 흐름을 기준으로 추천 성향을 설명합니다.</p>
+            </div>
+          </div>
+          <div id="weatherGrid" class="weather-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>추천 선정 기준</h2>
+              <p>4인 가족, 초등학생, 활동형 성향을 기준으로 점수를 구성했습니다.</p>
+            </div>
+          </div>
+          <div class="criteria-grid">
+            <div class="criteria-item">
+              <strong>초등 남아 선호</strong>
+              <p>움직임이 많고 직접 체험할 수 있는 장소를 우선 배치합니다.</p>
+            </div>
+            <div class="criteria-item">
+              <strong>계절 체험</strong>
+              <p>월별 계절감이 살아 있는 야외형, 물놀이형, 생태형 장소를 가중합니다.</p>
+            </div>
+            <div class="criteria-item">
+              <strong>교육 요소</strong>
+              <p>박물관, 생태, 역사, 과학 주제가 있는 장소를 기본 점수에 포함합니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>4주 달력 추천</h2>
+              <p>달력의 카드 제목을 누르면 공식 웹사이트가 새 탭에서 열립니다.</p>
+            </div>
+          </div>
+          <div id="calendarMeta" class="calendar-meta"></div>
+          <div id="calendar" class="calendar"></div>
+        </section>
+      </div>
+
+      <div class="side-stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>전국 8도 추천 수</h2>
+              <p>4주간 달력에 배치된 추천 장소 수만 권역별 숫자로 표시합니다.</p>
+            </div>
+          </div>
+          <div id="mapBoard" class="map-board"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>물놀이장 우선순위</h2>
+              <p>경기도 광명시 기준 거리와 공식 요금 정보를 함께 반영합니다.</p>
+            </div>
+          </div>
+          <div id="waterRank" class="water-rank"></div>
+          <div class="footer-note">
+            요금 정보는 공식 페이지 기준 값으로 데이터에 반영했고, 거리 값은 광명시 출발 대략 이동 거리입니다.
+            화면 하단 로직 기준일은 2026년 4월 28일 설명용 메모입니다.
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const provinceOrder = ["경기도", "강원도", "충청북도", "충청남도", "전라북도", "전라남도", "경상북도", "경상남도"];
+    const weekdayLabels = ["일", "월", "화", "수", "목", "금", "토"];
+    const weatherPatterns = {
+      spring: [
+        ["☀️", "맑음", 22, 11, "야외 체험형 일정이 잘 맞습니다."],
+        ["⛅", "구름", 21, 10, "숲길, 동굴, 테마형 장소가 안정적입니다."],
+        ["🌤️", "화창", 23, 12, "장시간 야외 체류가 무리 없습니다."],
+        ["🌦️", "짧은 비", 19, 11, "실내 체험과 박물관 비중이 좋습니다."],
+        ["☀️", "청명", 24, 12, "전망, 산책, 액티브 체험에 적합합니다."],
+        ["🌤️", "온화", 22, 13, "가족 단위 이동이 편한 날입니다."],
+        ["⛅", "선선", 20, 10, "반실내형 코스를 섞기 좋습니다."]
+      ],
+      summer: [
+        ["☀️", "강한 햇살", 30, 22, "물놀이와 실내형 이동을 섞어 주세요."],
+        ["🌤️", "무더움", 31, 23, "워터파크 우선 추천이 유리합니다."],
+        ["⛅", "후텁지근", 29, 22, "아쿠아리움, 실내 체험 비중을 늘리세요."],
+        ["🌦️", "소나기", 28, 23, "실내 대체 동선이 있는 장소가 좋습니다."],
+        ["☀️", "맑고 더움", 32, 24, "짧은 이동의 물놀이장이 효율적입니다."],
+        ["🌤️", "강한 자외선", 31, 23, "오전 활동 후 실내 휴식 조합이 좋습니다."],
+        ["🌦️", "습함", 29, 24, "실내외 겸용 시설을 추천합니다."]
+      ],
+      autumn: [
+        ["☀️", "맑음", 21, 10, "역사 체험과 산책형 일정이 잘 맞습니다."],
+        ["⛅", "산뜻", 20, 9, "생태 체험과 야외 학습에 좋습니다."],
+        ["🌤️", "쾌청", 22, 11, "가족 체험형 일정에 최적입니다."],
+        ["🌬️", "선선한 바람", 19, 8, "가벼운 점퍼가 있으면 편합니다."],
+        ["☀️", "청명", 23, 12, "야외 활동 시간이 길어도 무난합니다."],
+        ["⛅", "구름", 20, 10, "실내외 혼합 일정이 좋습니다."],
+        ["🌤️", "부드러운 햇살", 21, 9, "사진과 체험 위주 일정에 적합합니다."]
+      ],
+      winter: [
+        ["☀️", "차가운 맑음", 6, -2, "실내 체험과 박물관 일정이 좋습니다."],
+        ["⛅", "흐림", 5, -3, "이동이 짧은 장소를 추천합니다."],
+        ["❄️", "기온 하강", 2, -5, "따뜻한 실내형 체험으로 구성하세요."],
+        ["☀️", "건조", 7, -2, "동굴, 박물관, 아쿠아리움이 편합니다."],
+        ["🌬️", "찬바람", 4, -4, "실외 활동 시간은 짧게 잡는 편이 좋습니다."],
+        ["⛅", "잔구름", 5, -3, "역사, 과학형 코스가 안정적입니다."],
+        ["☀️", "햇살", 6, -1, "오후 짧은 야외 체험은 가능합니다."]
+      ]
+    };
+
+    const venues = [
+      {
+        province: "경기도",
+        name: "웅진플레이도시 워터파크",
+        url: "https://www.playdoci.com/",
+        tags: ["water", "active", "indoor"],
+        familyFit: 95,
+        education: 28,
+        activity: 94,
+        monthBoost: { summer: 38, spring: 10, autumn: 8, winter: 24 },
+        distanceKm: 17,
+        pricePerPerson: 60000,
+        officialPriceNote: "종일권 기준 1인 60,000원"
+      },
+      {
+        province: "경기도",
+        name: "캐리비안 베이",
+        url: "https://reservation.everland.com/mobile/cb.do?index_id=4&menu_id=0210&method=productMain",
+        tags: ["water", "active", "outdoor"],
+        familyFit: 92,
+        education: 18,
+        activity: 97,
+        monthBoost: { summer: 42, spring: 6, autumn: 4, winter: 8 },
+        distanceKm: 55,
+        pricePerPerson: 30000,
+        officialPriceNote: "현재 페이지 표기 최소가 기준 1인 30,000원"
+      },
+      {
+        province: "경기도",
+        name: "광명동굴",
+        url: "https://www.gm.go.kr/cv/index.do",
+        tags: ["education", "indoor", "active"],
+        familyFit: 88,
+        education: 86,
+        activity: 60,
+        monthBoost: { spring: 16, summer: 18, autumn: 16, winter: 20 }
+      },
+      {
+        province: "경기도",
+        name: "한국민속촌",
+        url: "https://www.koreanfolk.co.kr/",
+        tags: ["education", "season", "outdoor"],
+        familyFit: 84,
+        education: 90,
+        activity: 70,
+        monthBoost: { spring: 20, summer: 8, autumn: 22, winter: 10 }
+      },
+      {
+        province: "강원도",
+        name: "레고랜드 코리아",
+        url: "https://www.legoland.kr/",
+        tags: ["active", "education", "outdoor"],
+        familyFit: 96,
+        education: 68,
+        activity: 95,
+        monthBoost: { spring: 18, summer: 20, autumn: 16, winter: 4 }
+      },
+      {
+        province: "강원도",
+        name: "설악 워터피아",
+        url: "https://www.hanwharesort.co.kr/irsweb/resort3/tpark/tp_intro.do?tp_cd=0100",
+        tags: ["water", "active"],
+        familyFit: 90,
+        education: 18,
+        activity: 92,
+        monthBoost: { summer: 34, spring: 10, autumn: 8, winter: 14 },
+        distanceKm: 198,
+        pricePerPerson: 58000,
+        officialPriceNote: "주간권 기준 1인 58,000원"
+      },
+      {
+        province: "충청북도",
+        name: "다누리아쿠아리움",
+        url: "https://www.danyang.go.kr/aquarium",
+        tags: ["education", "water", "indoor"],
+        familyFit: 87,
+        education: 88,
+        activity: 58,
+        monthBoost: { spring: 14, summer: 18, autumn: 14, winter: 18 }
+      },
+      {
+        province: "충청북도",
+        name: "국립청주박물관",
+        url: "https://cheongju.museum.go.kr/",
+        tags: ["education", "indoor"],
+        familyFit: 78,
+        education: 94,
+        activity: 35,
+        monthBoost: { spring: 8, summer: 10, autumn: 8, winter: 16 }
+      },
+      {
+        province: "충청남도",
+        name: "독립기념관",
+        url: "https://www.i815.or.kr/",
+        tags: ["education", "outdoor", "season"],
+        familyFit: 82,
+        education: 97,
+        activity: 54,
+        monthBoost: { spring: 16, summer: 10, autumn: 18, winter: 8 }
+      },
+      {
+        province: "충청남도",
+        name: "국립생태원",
+        url: "https://www.nie.re.kr/",
+        tags: ["education", "season", "outdoor"],
+        familyFit: 85,
+        education: 91,
+        activity: 57,
+        monthBoost: { spring: 18, summer: 14, autumn: 18, winter: 10 }
+      },
+      {
+        province: "전라북도",
+        name: "전북어린이창의체험관",
+        url: "https://www.jbchild.kr/",
+        tags: ["education", "indoor", "active"],
+        familyFit: 91,
+        education: 82,
+        activity: 78,
+        monthBoost: { spring: 10, summer: 12, autumn: 10, winter: 20 }
+      },
+      {
+        province: "전라북도",
+        name: "국립전주박물관",
+        url: "https://jeonju.museum.go.kr/korean/",
+        tags: ["education", "indoor"],
+        familyFit: 76,
+        education: 92,
+        activity: 34,
+        monthBoost: { spring: 8, summer: 10, autumn: 10, winter: 18 }
+      },
+      {
+        province: "전라남도",
+        name: "아쿠아플라넷 여수",
+        url: "https://www.aquaplanet.co.kr/yeosu/index.do",
+        tags: ["water", "education", "indoor"],
+        familyFit: 89,
+        education: 82,
+        activity: 64,
+        monthBoost: { spring: 12, summer: 20, autumn: 12, winter: 14 }
+      },
+      {
+        province: "전라남도",
+        name: "순천만국가정원",
+        url: "https://scbay.suncheon.go.kr/garden/0017/0009/",
+        tags: ["season", "outdoor", "education"],
+        familyFit: 83,
+        education: 80,
+        activity: 58,
+        monthBoost: { spring: 22, summer: 12, autumn: 20, winter: 4 }
+      },
+      {
+        province: "경상북도",
+        name: "경주엑스포대공원",
+        url: "https://www.cultureexpo.or.kr/",
+        tags: ["education", "active", "outdoor"],
+        familyFit: 84,
+        education: 86,
+        activity: 68,
+        monthBoost: { spring: 16, summer: 12, autumn: 18, winter: 8 }
+      },
+      {
+        province: "경상북도",
+        name: "캘리포니아비치",
+        url: "https://www.gjw.co.kr/California/contents.php?cmsNo=WB0200/view/34",
+        tags: ["water", "active"],
+        familyFit: 92,
+        education: 12,
+        activity: 94,
+        monthBoost: { summer: 36, spring: 6, autumn: 4, winter: 0 },
+        distanceKm: 315,
+        pricePerPerson: 49000,
+        officialPriceNote: "종일권 기준 1인 49,000원"
+      },
+      {
+        province: "경상남도",
+        name: "로봇랜드",
+        url: "https://www.robot-land.co.kr/",
+        tags: ["active", "education", "outdoor"],
+        familyFit: 93,
+        education: 68,
+        activity: 93,
+        monthBoost: { spring: 16, summer: 18, autumn: 16, winter: 6 }
+      },
+      {
+        province: "경상남도",
+        name: "롯데워터파크",
+        url: "https://www.lotteworld.com/contents/contents.asp?cmsCd=CM0297",
+        tags: ["water", "active"],
+        familyFit: 92,
+        education: 10,
+        activity: 95,
+        monthBoost: { summer: 34, spring: 8, autumn: 4, winter: 0 },
+        distanceKm: 336,
+        pricePerPerson: 46000,
+        officialPriceNote: "종일권 기준 1인 46,000원"
+      }
+    ];
+
+    const visitDateInput = document.getElementById("visitDate");
+    const weatherGrid = document.getElementById("weatherGrid");
+    const calendar = document.getElementById("calendar");
+    const calendarMeta = document.getElementById("calendarMeta");
+    const mapBoard = document.getElementById("mapBoard");
+    const waterRank = document.getElementById("waterRank");
+    const rangeLabel = document.getElementById("rangeLabel");
+    const summaryTitle = document.getElementById("summaryTitle");
+    const summaryText = document.getElementById("summaryText");
+    const familyScore = document.getElementById("familyScore");
+    const familyComment = document.getElementById("familyComment");
+    const waterHeadline = document.getElementById("waterHeadline");
+    const waterComment = document.getElementById("waterComment");
+
+    const baseNow = new Date();
+    baseNow.setDate(baseNow.getDate() + 2);
+    visitDateInput.value = toInputDate(baseNow);
+    visitDateInput.addEventListener("input", renderPage);
+
+    function toInputDate(date) {
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+      ].join("-");
+    }
+
+    function parseDate(value) {
+      const [year, month, day] = value.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function startOfWeek(date) {
+      const copy = new Date(date);
+      copy.setHours(0, 0, 0, 0);
+      copy.setDate(copy.getDate() - copy.getDay());
+      return copy;
+    }
+
+    function addDays(date, days) {
+      const copy = new Date(date);
+      copy.setDate(copy.getDate() + days);
+      return copy;
+    }
+
+    function formatDate(date) {
+      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function getSeason(month) {
+      if ([2, 3, 4].includes(month)) return "spring";
+      if ([5, 6, 7].includes(month)) return "summer";
+      if ([8, 9, 10].includes(month)) return "autumn";
+      return "winter";
+    }
+
+    function seasonLabel(season) {
+      return {
+        spring: "봄",
+        summer: "여름",
+        autumn: "가을",
+        winter: "겨울"
+      }[season];
+    }
+
+    function scoreVenue(venue, season, dayIndex, day) {
+      const weekend = day.getDay() === 0 || day.getDay() === 6;
+      let score = venue.familyFit * 0.42 + venue.education * 0.28 + venue.activity * 0.18;
+      score += venue.monthBoost[season] || 0;
+
+      if (venue.tags.includes("water") && season === "summer") {
+        score += 22;
+      }
+      if (venue.tags.includes("education") && season !== "summer") {
+        score += 8;
+      }
+      if (venue.tags.includes("indoor") && (season === "winter" || season === "summer")) {
+        score += 6;
+      }
+      if (venue.tags.includes("season") && (season === "spring" || season === "autumn")) {
+        score += 8;
+      }
+      if (weekend && venue.tags.includes("active")) {
+        score += 7;
+      }
+      if (!weekend && venue.tags.includes("education")) {
+        score += 4;
+      }
+
+      const rotationBias = ((provinceOrder.indexOf(venue.province) * 3 + dayIndex) % 5) * 1.2;
+      score += rotationBias;
+
+      if (season === "summer" && venue.province === "경기도" && venue.tags.includes("water")) {
+        const waterPriority = 100 - (venue.distanceKm * 1.2) - (venue.pricePerPerson / 2000);
+        score += Math.max(waterPriority, 0);
+      }
+
+      return score;
+    }
+
+    function buildSchedule(selectedDate) {
+      const weekStart = startOfWeek(selectedDate);
+      const season = getSeason(selectedDate.getMonth());
+      const schedule = [];
+      const usedByProvince = {};
+
+      for (let i = 0; i < 28; i += 1) {
+        const day = addDays(weekStart, i);
+        const targetProvince = provinceOrder[(i + Math.floor(i / 7) + selectedDate.getDate()) % provinceOrder.length];
+        const candidates = venues
+          .filter((venue) => venue.province === targetProvince)
+          .map((venue) => ({
+            ...venue,
+            totalScore: scoreVenue(venue, season, i, day)
+          }))
+          .sort((a, b) => b.totalScore - a.totalScore);
+
+        const history = usedByProvince[targetProvince] || [];
+        let chosen = candidates.find((item) => !history.slice(-1).includes(item.name)) || candidates[0];
+
+        if (day.getDay() === 6 || day.getDay() === 0) {
+          const weekendChoice = candidates.find((item) => item.tags.includes(season === "summer" ? "water" : "active"));
+          if (weekendChoice && weekendChoice.totalScore + 4 >= chosen.totalScore) {
+            chosen = weekendChoice;
+          }
+        }
+
+        schedule.push({
+          date: day,
+          province: chosen.province,
+          name: chosen.name,
+          url: chosen.url,
+          tags: chosen.tags,
+          note: buildNote(chosen, season),
+          score: Math.round(chosen.totalScore)
+        });
+
+        usedByProvince[targetProvince] = [...history, chosen.name];
+      }
+
+      return { weekStart, season, schedule };
+    }
+
+    function buildNote(venue, season) {
+      const notes = [];
+      if (venue.tags.includes("water")) notes.push("물놀이");
+      if (venue.tags.includes("education")) notes.push("교육");
+      if (venue.tags.includes("active")) notes.push("활동형");
+      if (venue.tags.includes("season")) notes.push(`${seasonLabel(season)} 체험`);
+      return notes.slice(0, 3).join(" · ");
+    }
+
+    function renderWeather(selectedDate) {
+      const season = getSeason(selectedDate.getMonth());
+      const pattern = weatherPatterns[season];
+      weatherGrid.innerHTML = "";
+
+      for (let i = 0; i < 7; i += 1) {
+        const [icon, label, highBase, lowBase, note] = pattern[(selectedDate.getDate() + i) % pattern.length];
+        const high = highBase + ((selectedDate.getDay() + i) % 2);
+        const low = lowBase - ((selectedDate.getDate() + i) % 2);
+        const card = document.createElement("article");
+        card.className = "weather-card";
+        card.innerHTML = `
+          <div class="day">${weekdayLabels[(startOfWeek(selectedDate).getDay() + i) % 7]}요일</div>
+          <div class="icon">${icon}</div>
+          <div class="temp">${high}° / ${low}°</div>
+          <div class="note">${label} · ${note}</div>
+        `;
+        weatherGrid.appendChild(card);
+      }
+    }
+
+    function renderCalendar(selectedDate, weekStart, schedule) {
+      calendar.innerHTML = "";
+      weekdayLabels.forEach((label) => {
+        const weekday = document.createElement("div");
+        weekday.className = "weekday";
+        weekday.textContent = label;
+        calendar.appendChild(weekday);
+      });
+
+      calendarMeta.textContent = `${formatDate(weekStart)}부터 ${formatDate(addDays(weekStart, 27))}까지 4주 추천 일정`;
+
+      for (let i = 0; i < 28; i += 1) {
+        const date = addDays(weekStart, i);
+        const item = schedule[i];
+        const dayCell = document.createElement("div");
+        dayCell.className = `day-cell${i < 7 ? " week-focus" : ""}`;
+        dayCell.innerHTML = `
+          <div class="day-top">
+            <strong>${date.getMonth() + 1}.${date.getDate()}</strong>
+            <span>${item.province}</span>
+          </div>
+          <div class="reco-list">
+            <a class="reco-link" href="${item.url}" target="_blank" rel="noopener noreferrer">
+              <strong>${item.name}</strong>
+              <span>${item.note} · 공식 사이트 열기</span>
+            </a>
+          </div>
+        `;
+        calendar.appendChild(dayCell);
+      }
+    }
+
+    function renderMap(schedule) {
+      mapBoard.innerHTML = "";
+      const countMap = provinceOrder.reduce((acc, province) => {
+        acc[province] = schedule.filter((item) => item.province === province).length;
+        return acc;
+      }, {});
+
+      provinceOrder.forEach((province) => {
+        const card = document.createElement("article");
+        card.className = "province";
+        card.dataset.region = province;
+        card.innerHTML = `
+          <strong>${province}</strong>
+          <div class="num">${countMap[province]}</div>
+          <span>추천 장소 수</span>
+        `;
+        mapBoard.appendChild(card);
+      });
+    }
+
+    function renderWaterRank(selectedDate) {
+      const season = getSeason(selectedDate.getMonth());
+      waterRank.innerHTML = "";
+
+      const waterVenues = venues
+        .filter((venue) => venue.tags.includes("water"))
+        .map((venue) => ({
+          ...venue,
+          waterPriority: Math.round(100 - (venue.distanceKm || 250) * 1.2 - ((venue.pricePerPerson || 50000) / 2000))
+        }))
+        .sort((a, b) => b.waterPriority - a.waterPriority);
+
+      const topThree = waterVenues.slice(0, 3);
+      waterHeadline.textContent = season === "summer" ? "여름 물놀이 우선 적용" : `${seasonLabel(season)}에도 참고 유지`;
+      waterComment.textContent = season === "summer"
+        ? "여름에는 물놀이 태그가 붙은 장소에 추가 점수를 더해 실제 추천 순서를 끌어올립니다."
+        : "현재 계절에는 기본 추천이 우선이지만, 물놀이장 비교 패널은 그대로 참고할 수 있습니다.";
+
+      topThree.forEach((item, index) => {
+        const box = document.createElement("div");
+        box.className = "water-item";
+        box.innerHTML = `
+          <div class="rank">#${index + 1}</div>
+          <div>
+            <strong>${item.name}</strong>
+            <p>광명시 기준 약 ${item.distanceKm}km · ${item.officialPriceNote}</p>
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer">공식 웹사이트 바로가기</a>
+          </div>
+        `;
+        waterRank.appendChild(box);
+      });
+    }
+
+    function renderSummary(selectedDate, season, schedule, weekStart) {
+      const totalScore = Math.round(schedule.reduce((sum, item) => sum + item.score, 0) / schedule.length);
+      const waterCount = schedule.filter((item) => item.tags.includes("water")).length;
+      const educationCount = schedule.filter((item) => item.tags.includes("education")).length;
+      rangeLabel.textContent = `${formatDate(weekStart)} - ${formatDate(addDays(weekStart, 27))}`;
+      summaryTitle.textContent = `${seasonLabel(season)}형 추천 ${schedule.length}건`;
+      summaryText.textContent = `물놀이 ${waterCount}건, 교육형 ${educationCount}건을 포함한 4주 일정입니다.`;
+      familyScore.textContent = totalScore;
+      familyComment.textContent = season === "summer"
+        ? "더운 시기라 물놀이와 실내 체험 비중이 자연스럽게 높아집니다."
+        : "계절 체험과 교육형 장소가 중심이고, 주말에는 활동형 장소 비중이 높아집니다.";
+    }
+
+    function renderPage() {
+      const selectedDate = parseDate(visitDateInput.value);
+      const { weekStart, season, schedule } = buildSchedule(selectedDate);
+      renderSummary(selectedDate, season, schedule, weekStart);
+      renderWeather(selectedDate);
+      renderCalendar(selectedDate, weekStart, schedule);
+      renderMap(schedule);
+      renderWaterRank(selectedDate);
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>
